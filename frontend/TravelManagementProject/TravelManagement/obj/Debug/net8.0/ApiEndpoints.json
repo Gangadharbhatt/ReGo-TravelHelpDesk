@@ -1,0 +1,134 @@
+[
+  {
+    "ContainingType": "TravelManagement.Controllers.Employee",
+    "Method": "GetEmployeeData",
+    "RelativePath": "api/Employee/GetEmployeeData",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "IDorEmail",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Employee",
+    "Method": "TravelDetailByEmpId",
+    "RelativePath": "api/Employee/TravelDetailByEmpId",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Home",
+    "Method": "GetRollMaster",
+    "RelativePath": "api/GetRollMaster",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Home",
+    "Method": "LoginRequest",
+    "RelativePath": "api/LoginRequest",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "username",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "password",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Manager",
+    "Method": "GetEmployeesByManagerId",
+    "RelativePath": "api/Manager/GetEmployeesByRptId",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ID",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Manager",
+    "Method": "InsertTravelDetail",
+    "RelativePath": "api/Manager/InsertTravelDetail",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "travel",
+        "Type": "System.Collections.Generic.List\u00601[[DataTravelManagement.Model.TravelMaster, DataTravelManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Manager",
+    "Method": "TravelDetailByRptId",
+    "RelativePath": "api/Manager/TravelDetailByRptId",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelManagement.Controllers.Home",
+    "Method": "UpdateTravelStatus",
+    "RelativePath": "api/UpdateTravelStatus",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

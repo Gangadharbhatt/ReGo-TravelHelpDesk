@@ -35,7 +35,7 @@ import {
   Navbar,
   SharedTypography,
   SharedCard,
-  StatDisplay,
+  SummaryStatCard,
   SharedTable,
   TableHeader,
   StatusChip,
@@ -160,43 +160,137 @@ const DashboardManager = () => {
           </SharedButton>
         </Box>
 
-        {/* Stats */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {(stats && stats.length > 0 ? stats : [
-            { title: 'Requests Raised', value: 24, iconKey: 'FlightTakeoff' },
-            { title: 'Pending Approvals', value: 5, iconKey: 'Assignment' },
-            { title: 'Total Reports', value: 12, iconKey: 'Group' }
-          ]).map((stat, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <StatDisplay
-                title={stat.title}
-                value={stat.value}
-                icon={ICON_MAP[stat.iconKey] || <FlightTakeoff />}
-                trend={stat.trend}
-                color={stat.color}
-              />
+        {/* Clickable Metric Cards (merged with filters) */}
+        <Box sx={{ mt: 3, mb: 4 }}>
+          <Grid container spacing={3}>
+            {/* Team Requests */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                onClick={() => setFilterStatus('ALL')}
+                sx={{
+                  cursor: 'pointer',
+                  transform: filterStatus === 'ALL' ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'transform 0.2s',
+                  border: filterStatus === 'ALL' ? '2px solid #DC2626' : '2px solid transparent',
+                  borderRadius: '16px',
+                  '&:hover': { transform: 'scale(1.02)' }
+                }}
+              >
+                <SummaryStatCard
+                  title="Team Requests"
+                  value={pendingApprovals?.length || 18}
+                  icon={<People fontSize="large" />}
+                  trend={{ value: 5, direction: 'up' }}
+                  color="primary"
+                />
+              </Box>
             </Grid>
-          ))}
-        </Grid>
+
+            {/* Total Requests */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                onClick={() => setFilterStatus('ALL')}
+                sx={{
+                  cursor: 'pointer',
+                  transform: filterStatus === 'ALL' ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'transform 0.2s',
+                  border: filterStatus === 'ALL' ? '2px solid #DC2626' : '2px solid transparent',
+                  borderRadius: '16px',
+                  '&:hover': { transform: 'scale(1.02)' }
+                }}
+              >
+                <SummaryStatCard
+                  title="Total Requests"
+                  value={pendingApprovals?.length || 24}
+                  icon={<FlightTakeoff fontSize="large" />}
+                  trend={{ value: 12, direction: 'up' }}
+                  color="primary"
+                />
+              </Box>
+            </Grid>
+
+            {/* Pending Approvals */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                onClick={() => setFilterStatus('PENDING')}
+                sx={{
+                  cursor: 'pointer',
+                  transform: filterStatus === 'PENDING' ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'transform 0.2s',
+                  border: filterStatus === 'PENDING' ? '2px solid #F59E0B' : '2px solid transparent',
+                  borderRadius: '16px',
+                  '&:hover': { transform: 'scale(1.02)' }
+                }}
+              >
+                <SummaryStatCard
+                  title="Pending Approvals"
+                  value={pendingApprovals?.filter(r => r.status.includes('REVIEW') || r.status === 'PENDING').length || 5}
+                  icon={<PendingActions fontSize="large" />}
+                  trend={{ value: 2, direction: 'up' }}
+                  color="warning"
+                />
+              </Box>
+            </Grid>
+
+            {/* Approved */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                onClick={() => setFilterStatus('APPROVED')}
+                sx={{
+                  cursor: 'pointer',
+                  transform: filterStatus === 'APPROVED' ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'transform 0.2s',
+                  border: filterStatus === 'APPROVED' ? '2px solid #10B981' : '2px solid transparent',
+                  borderRadius: '16px',
+                  '&:hover': { transform: 'scale(1.02)' }
+                }}
+              >
+                <SummaryStatCard
+                  title="Approved"
+                  value={pendingApprovals?.filter(r => r.status.includes('APPROVED')).length || 15}
+                  icon={<CheckCircle fontSize="large" />}
+                  trend={{ value: 8, direction: 'up' }}
+                  color="success"
+                />
+              </Box>
+            </Grid>
+
+            {/* Rejected */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                onClick={() => setFilterStatus('REJECTED')}
+                sx={{
+                  cursor: 'pointer',
+                  transform: filterStatus === 'REJECTED' ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'transform 0.2s',
+                  border: filterStatus === 'REJECTED' ? '2px solid #EF4444' : '2px solid transparent',
+                  borderRadius: '16px',
+                  '&:hover': { transform: 'scale(1.02)' }
+                }}
+              >
+                <SummaryStatCard
+                  title="Rejected"
+                  value={pendingApprovals?.filter(r => r.status === 'REJECTED').length || 4}
+                  icon={<Cancel fontSize="large" />}
+                  trend={{ value: 2, direction: 'down' }}
+                  color="error"
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
 
         {/* Recent Application Status Table */}
         <SharedCard variant="dashboard">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <SharedTypography variant="cardTitle">
-              Recent Application Status
+              {filterStatus === 'ALL' ? 'All Applications' :
+                filterStatus === 'PENDING' ? 'Pending Approvals' :
+                  filterStatus === 'APPROVED' ? 'Approved Requests' :
+                    filterStatus === 'REJECTED' ? 'Rejected Requests' :
+                      'Recent Application Status'}
             </SharedTypography>
-
-            {/* Filter Bar */}
-            <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 1 }}>
-              <FilterButton label="All" value="ALL" />
-              <FilterButton label="Pending" value="PENDING" />
-              <FilterButton label="Approved" value="APPROVED" />
-              <FilterButton label="Rejected" value="REJECTED" />
-              <FilterButton label="Manager Review" value="MANAGER_REVIEW" />
-              {(user?.role === 'AVP' || user?.role === 'SVP') && (
-                <FilterButton label="Travel Desk" value="TRAVEL_DESK_REVIEW" />
-              )}
-            </Stack>
+            <StatusChip label={`${filteredApprovals.length} Records`} color="default" />
           </Box>
 
           <SharedTable>

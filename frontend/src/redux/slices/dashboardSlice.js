@@ -40,13 +40,14 @@ const mockEmployeeActiveRequest = {
 export const fetchDashboardData = createAsyncThunk(
   'dashboard/fetch',
   async (_, { getState }) => {
-    if (apiConfig.USE_MOCK_API) {
-      const { auth } = getState();
-      const userRole = auth.user?.role;
+    const { auth } = getState();
+    const userRole = auth.user?.role;
+    const empId = auth.user?.empId || auth.user?.id;
 
+    if (apiConfig.USE_MOCK_API) {
       // Use dashboardService for mock data
-      const stats = await dashboardService.getDashboardStats(userRole);
-      const pendingApprovals = await dashboardService.getPendingApprovals();
+      const stats = await dashboardService.getDashboardStats(userRole, empId);
+      const pendingApprovals = await dashboardService.getPendingApprovals(empId);
 
       return {
         stats: stats || mockDashboardStats,
@@ -54,26 +55,36 @@ export const fetchDashboardData = createAsyncThunk(
         activeRequest: mockEmployeeActiveRequest
       };
     }
-    const [statsRes, approvalsRes] = await Promise.all([
-      api.get(apiConfig.ENDPOINTS.DASHBOARD_STATS),
-      api.get(apiConfig.ENDPOINTS.PENDING_APPROVALS)
-    ]);
+
+    // REAL BACKEND: Fetch data using dashboardService
+    const stats = await dashboardService.getDashboardStats(userRole, empId);
+    const pendingApprovals = await dashboardService.getPendingApprovals(empId);
+    const activeRequest = userRole === 'EMPLOYEE'
+      ? await dashboardService.getActiveRequest(empId)
+      : null;
+
     return {
-      stats: statsRes.data?.data || statsRes.data,
-      pendingApprovals: approvalsRes.data?.data || approvalsRes.data
+      stats: stats || [],
+      pendingApprovals: pendingApprovals || [],
+      activeRequest: activeRequest
     };
   }
 );
 
 export const fetchTravelDeskData = createAsyncThunk(
   'dashboard/fetchTravelDesk',
-  async () => {
+  async (_, { getState }) => {
+    const { auth } = getState();
+    const empId = auth.user?.empId || auth.user?.id;
+
     if (apiConfig.USE_MOCK_API) {
-      const pendingRequests = await dashboardService.getPendingRequests();
+      const pendingRequests = await dashboardService.getPendingRequests(empId);
       return { pendingRequests: pendingRequests || [] };
     }
-    const response = await api.get(apiConfig.ENDPOINTS.TRAVEL_DESK.PENDING_REQUESTS);
-    return { pendingRequests: response.data?.data || response.data };
+
+    // REAL BACKEND: Fetch pending requests
+    const pendingRequests = await dashboardService.getPendingRequests(empId);
+    return { pendingRequests: pendingRequests || [] };
   }
 );
 

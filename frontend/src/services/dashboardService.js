@@ -1,11 +1,17 @@
 /**
  * Dashboard Service
- * Provides mock dashboard data for development
- * Will be replaced with real API calls when backend is ready
+ * Provides dashboard data for all user roles
+ * Automatically switches between mock and real API based on environment
+ * 
+ * BACKEND INTEGRATION:
+ * - Employee: GET /api/Employee/TravelDetailByEmpId?id={empId}
+ * - Manager/AVP/SVP/CHRO: GET /api/Manager/TravelDetailByRptId?id={managerId}
+ * - Travel Desk: Same as Manager (all pending requests)
+ * - Backend returns TravelMaster objects with Status codes (0-10)
  */
 
 import apiClient from '../api/client';
-import apiConfig, { ENDPOINTS } from '../config/apiConfig';
+import apiConfig, { ENDPOINTS, mapBackendResponse, mapStatusCode } from '../config/apiConfig';
 import {
   People as PeopleIcon,
   PendingActions as PendingActionsIcon,
@@ -19,9 +25,10 @@ const dashboardService = {
   /**
    * Get dashboard statistics
    * @param {string} role - User role
+   * @param {string} empId - Employee ID
    * @returns {Promise<Array>} - Array of stat objects
    */
-  getDashboardStats: async (role) => {
+  getDashboardStats: async (role, empId) => {
     if (apiConfig.USE_MOCK_API) {
       console.log('🔵 Using MOCK data for dashboard stats');
       return new Promise((resolve) => {
@@ -31,17 +38,50 @@ const dashboardService = {
       });
     }
 
-    // Real API call
+    // ============================================
+    // REAL BACKEND - Fetch travel data and compute stats
+    // ============================================
     console.log('🟢 Using REAL API for dashboard stats');
-    const response = await apiClient.get(ENDPOINTS.DASHBOARD.STATS);
-    return response.data.data.stats;
+
+    try {
+      let travelData = [];
+
+      if (role === 'EMPLOYEE') {
+        // Fetch employee's own travel details
+        const url = apiConfig.buildUrl(ENDPOINTS.EMPLOYEE.GET_TRAVEL_DETAILS, { id: empId });
+        const response = await apiClient.post(url);
+        const mapped = mapBackendResponse(response.data);
+
+        if (mapped.success && mapped.data) {
+          travelData = [mapped.data]; // Single travel record
+        }
+      } else if (['MANAGER', 'AVP', 'SVP', 'CHRO', 'TRAVEL_DESK', 'ADMIN'].includes(role)) {
+        // Fetch team's travel details
+        const url = apiConfig.buildUrl(ENDPOINTS.MANAGER.GET_TEAM_TRAVEL_DETAILS, { id: empId });
+        const response = await apiClient.post(url);
+        const mapped = mapBackendResponse(response.data);
+
+        if (mapped.success && mapped.data) {
+          travelData = mapped.data; // Array of travel records
+        }
+      }
+
+      // Compute stats from travel data
+      return computeStatsFromTravelData(travelData, role);
+
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      // Return empty stats on error
+      return getMockStats(role).map(stat => ({ ...stat, value: 0 }));
+    }
   },
 
   /**
    * Get pending approvals
+   * @param {string} empId - Manager/Approver ID
    * @returns {Promise<Array>} - Array of pending approval objects
    */
-  getPendingApprovals: async () => {
+  getPendingApprovals: async (empId) => {
     if (apiConfig.USE_MOCK_API) {
       console.log('🔵 Using MOCK data for pending approvals');
       return new Promise((resolve) => {
@@ -51,17 +91,35 @@ const dashboardService = {
       });
     }
 
-    // Real API call
+    // ============================================
+    // REAL BACKEND - Fetch team travel details
+    // ============================================
     console.log('🟢 Using REAL API for pending approvals');
-    const response = await apiClient.get(ENDPOINTS.APPROVALS.PENDING);
-    return response.data.data.approvals;
+
+    try {
+      const url = apiConfig.buildUrl(ENDPOINTS.MANAGER.GET_TEAM_TRAVEL_DETAILS, { id: empId });
+      const response = await apiClient.post(url);
+      const mapped = mapBackendResponse(response.data);
+
+      if (!mapped.success || !mapped.data) {
+        return [];
+      }
+
+      // Map backend TravelMaster to frontend format
+      return mapped.data.map(travel => mapTravelMasterToRequest(travel));
+
+    } catch (error) {
+      console.error('Error fetching pending approvals:', error);
+      return [];
+    }
   },
 
   /**
    * Get pending travel desk requests
+   * @param {string} empId - Travel desk employee ID
    * @returns {Promise<Array>} - Array of pending request objects
    */
-  getPendingRequests: async () => {
+  getPendingRequests: async (empId) => {
     if (apiConfig.USE_MOCK_API) {
       console.log('🔵 Using MOCK data for pending requests');
       return new Promise((resolve) => {
@@ -71,17 +129,225 @@ const dashboardService = {
       });
     }
 
-    // Real API call
+    // ============================================
+    // REAL BACKEND - Same as pending approvals
+    // ============================================
     console.log('🟢 Using REAL API for pending requests');
-    const response = await apiClient.get(ENDPOINTS.TRAVEL_REQUESTS.LIST, {
-      params: { status: 'PENDING' }
-    });
-    return response.data.data.requests;
+
+    try {
+      const url = apiConfig.buildUrl(ENDPOINTS.MANAGER.GET_TEAM_TRAVEL_DETAILS, { id: empId });
+      const response = await apiClient.post(url);
+      const mapped = mapBackendResponse(response.data);
+
+      if (!mapped.success || !mapped.data) {
+        return [];
+      }
+
+      // Filter for approved requests that need booking
+      const approvedRequests = mapped.data.filter(travel =>
+        travel.Status >= 5 && travel.Status <= 10 // Approved to Booking Completed
+      );
+
+      return approvedRequests.map(travel => mapTravelMasterToRequest(travel));
+
+    } catch (error) {
+      console.error('Error fetching pending requests:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Get employee's active travel request
+   * @param {string} empId - Employee ID
+   * @returns {Promise<object|null>} - Active travel request or null
+   */
+  getActiveRequest: async (empId) => {
+    if (apiConfig.USE_MOCK_API) {
+      console.log('🔵 Using MOCK data for active request');
+      // Return mock data
+      return null;
+    }
+
+    console.log('🟢 Using REAL API for active request');
+
+    try {
+      const url = apiConfig.buildUrl(ENDPOINTS.EMPLOYEE.GET_TRAVEL_DETAILS, { id: empId });
+      const response = await apiClient.post(url);
+      const mapped = mapBackendResponse(response.data);
+
+      if (!mapped.success || !mapped.data) {
+        return null;
+      }
+
+      return mapTravelMasterToRequest(mapped.data);
+
+    } catch (error) {
+      console.error('Error fetching active request:', error);
+      return null;
+    }
   }
 };
 
 // ============================================
-// MOCK DATA FUNCTIONS
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Map backend TravelMaster to frontend request format
+ * @param {object} travel - TravelMaster from backend
+ * @returns {object} - Frontend request object
+ */
+const mapTravelMasterToRequest = (travel) => {
+  return {
+    id: travel.EmpId,
+    empId: travel.EmpId,
+    employee: travel.EmpId, // Will be replaced with name if available
+    destination: `${travel.City}, ${travel.Country}`,
+    city: travel.City,
+    country: travel.Country,
+    departure: travel.TravelStartDate,
+    departureDate: travel.TravelStartDate,
+    returnDate: travel.TravelEndDate,
+    suggestedDate: travel.SuggestedDate,
+    purpose: travel.Remark || 'Business Travel',
+    status: mapStatusCode(travel.Status),
+    statusCode: travel.Status,
+    rptEmpId: travel.RptEmpId,
+    // Additional fields for frontend
+    requestNumber: `TR-${travel.EmpId}-${new Date(travel.SuggestedDate).getFullYear()}`,
+    estimatedCost: 100000, // Backend doesn't have cost field
+    priority: 'MEDIUM',
+    submittedAt: travel.SuggestedDate,
+    steps: generateStepsFromStatus(travel.Status)
+  };
+};
+
+/**
+ * Generate stepper steps based on status
+ * @param {number} statusCode - Status code from backend
+ * @returns {Array} - Array of step objects
+ */
+const generateStepsFromStatus = (statusCode) => {
+  const allSteps = [
+    { label: 'Request Raised', completed: statusCode >= 0 },
+    { label: 'Manager Review', completed: statusCode >= 1 },
+    { label: 'AVP Review', completed: statusCode >= 2 },
+    { label: 'SVP Review', completed: statusCode >= 3 },
+    { label: 'CHRO Approval', completed: statusCode >= 4 },
+    { label: 'Documents Submitted', completed: statusCode >= 7 },
+    { label: 'Booking Confirmed', completed: statusCode >= 10 }
+  ];
+
+  return allSteps;
+};
+
+/**
+ * Compute stats from travel data
+ * @param {Array} travelData - Array of TravelMaster objects
+ * @param {string} role - User role
+ * @returns {Array} - Array of stat objects
+ */
+const computeStatsFromTravelData = (travelData, role) => {
+  const total = travelData.length;
+  const pending = travelData.filter(t => t.Status < 5).length;
+  const approved = travelData.filter(t => t.Status >= 5 && t.Status < 6).length;
+  const rejected = travelData.filter(t => t.Status === 6).length;
+  const completed = travelData.filter(t => t.Status === 10).length;
+
+  if (role === 'MANAGER' || role === 'AVP' || role === 'SVP' || role === 'CHRO') {
+    return [
+      {
+        title: 'Team Requests',
+        value: total,
+        iconKey: 'People',
+        color: 'primary',
+        trend: `${total > 0 ? '+' : ''}${total}`
+      },
+      {
+        title: 'Pending Approvals',
+        value: pending,
+        iconKey: 'PendingActions',
+        color: 'warning',
+        trend: `${pending > 0 ? '+' : ''}${pending}`
+      },
+      {
+        title: 'Approved',
+        value: approved,
+        iconKey: 'CheckCircle',
+        color: 'success',
+        trend: `${approved > 0 ? '+' : ''}${approved}`
+      },
+      {
+        title: 'Rejected',
+        value: rejected,
+        iconKey: 'Cancel',
+        color: 'error',
+        trend: `${rejected > 0 ? '-' : ''}${rejected}`
+      }
+    ];
+  }
+
+  if (role === 'TRAVEL_DESK' || role === 'ADMIN') {
+    return [
+      {
+        title: 'Pending Processing',
+        value: pending,
+        iconKey: 'PendingActions',
+        color: 'warning',
+        trend: `${pending > 0 ? '+' : ''}${pending}`
+      },
+      {
+        title: 'Total Bookings',
+        value: total,
+        iconKey: 'Flight',
+        color: 'info',
+        trend: `${total > 0 ? '+' : ''}${total}`
+      },
+      {
+        title: 'Completed',
+        value: completed,
+        iconKey: 'CheckCircle',
+        color: 'success',
+        trend: `${completed > 0 ? '+' : ''}${completed}`
+      }
+    ];
+  }
+
+  // Default stats
+  return [
+    {
+      title: 'Total Requests',
+      value: total,
+      iconKey: 'Flight',
+      color: 'primary',
+      trend: `${total > 0 ? '+' : ''}${total}`
+    },
+    {
+      title: 'Pending',
+      value: pending,
+      iconKey: 'PendingActions',
+      color: 'warning',
+      trend: `${pending > 0 ? '+' : ''}${pending}`
+    },
+    {
+      title: 'Approved',
+      value: approved,
+      iconKey: 'CheckCircle',
+      color: 'success',
+      trend: `${approved > 0 ? '+' : ''}${approved}`
+    },
+    {
+      title: 'Rejected',
+      value: rejected,
+      iconKey: 'Cancel',
+      color: 'error',
+      trend: `${rejected > 0 ? '-' : ''}${rejected}`
+    }
+  ];
+};
+
+// ============================================
+// MOCK DATA FUNCTIONS (Kept for compatibility)
 // ============================================
 
 /**

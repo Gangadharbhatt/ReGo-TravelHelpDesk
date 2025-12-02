@@ -1,36 +1,62 @@
 // src/components/shared/cards/SharedCard.jsx
 import React from 'react';
-import { Card } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { AnimatedCard } from '../../../animations/components';
+import { theme } from '../../../config/theme';
 
-const StyledCard = styled(Card)(({ theme, variant = 'default' }) => ({
-  borderRadius: 12,
-  transition: 'all 0.2s ease',
-  
-  ...(variant === 'stat' && {
-    padding: theme.spacing(3),
-    border: '1.5px solid',
-    borderTop: '7px solid',
-  }),
+const SharedCard = ({
+  children,
+  className,
+  delay = 0,
+  onClick,
+  variant = 'default', // default, stat, dashboard, auth
+  ...props
+}) => {
 
-  ...(variant === 'dashboard' && {
-    padding: theme.spacing(3),
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-  }),
+  const getStyles = () => {
+    const base = {
+      background: theme.neutral[0],
+      borderRadius: theme.borderRadius.xl,
+      border: `1px solid ${theme.neutral[200]}`,
+      padding: theme.spacing.xl,
+      boxShadow: theme.shadows.md,
+      overflow: 'hidden',
+      position: 'relative',
+    };
 
-  ...(variant === 'auth' && {
-    padding: theme.spacing(4),
-    maxWidth: 400,
-    margin: '0 auto',
-    borderTop: `8px solid ${theme.palette.primary.main}`,
-  })
-}));
+    switch (variant) {
+      case 'stat':
+        return {
+          ...base,
+          borderTop: `4px solid ${theme.primary[500]}`,
+        };
+      case 'dashboard':
+        return {
+          ...base,
+          boxShadow: theme.shadows.lg,
+        };
+      case 'auth':
+        return {
+          ...base,
+          maxWidth: '450px',
+          margin: '0 auto',
+          padding: theme.spacing.xxl,
+          borderTop: `4px solid ${theme.primary[500]}`,
+        };
+      default:
+        return base;
+    }
+  };
 
-const SharedCard = ({ variant = 'default', children, ...props }) => {
   return (
-    <StyledCard variant={variant} {...props}>
-      {children}
-    </StyledCard>
+    <AnimatedCard
+      delay={delay}
+      onClick={onClick}
+      className={className}
+    >
+      <div style={getStyles()} {...props}>
+        {children}
+      </div>
+    </AnimatedCard>
   );
 };
 

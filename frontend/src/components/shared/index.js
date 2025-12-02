@@ -11,16 +11,13 @@ export { default as SharedCard } from './cards/SharedCard';
 // Data Display
 export { default as StatDisplay } from './data-display/StatDisplay';
 export { default as InfoDisplay } from './data-display/InfoDisplay';
+export { default as FilterBar } from './data-display/FilterBar';
+export { default as MetricsCard } from './data-display/MetricsCard';
+export { default as SummaryStatCard } from './data-display/SummaryStatCard';
 
-//layout
-
-
-
-//modals
+// Modals
 export { default as SharedModal } from './modals/SharedModal';
 export { default as SharedTypography } from './typography/SharedTypography';
-
-
 
 // Feedback
 export { default as LoadingSpinner } from './feedback/LoadingSpinner';

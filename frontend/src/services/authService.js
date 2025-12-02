@@ -2,11 +2,17 @@
  * Authentication Service
  * Handles all authentication-related API calls
  * Automatically switches between mock and real API based on environment
+ * 
+ * BACKEND INTEGRATION:
+ * - Backend login: POST /api/LoginRequest?username={email}&password={password}
+ * - Returns: Response<int> where Result is RefRoleId (1-8)
+ * - NO JWT tokens - simple role-based auth
+ * - Must fetch employee data separately after login to get full user details
  */
 
 import apiClient from '../api/client';
 import mockDataService from './mockDataService';
-import apiConfig, { ENDPOINTS } from '../config/apiConfig';
+import apiConfig, { ENDPOINTS, mapBackendResponse, mapRoleId } from '../config/apiConfig';
 import { STORAGE_KEYS } from '../utils/constants';
 
 const authService = {
@@ -21,24 +27,107 @@ const authService = {
     if (apiConfig.USE_MOCK_API) {
       console.log('🔵 Using MOCK API for login');
       response = await mockDataService.login(credentials);
-    } else {
-      console.log('🟢 Using REAL API for login');
-      response = await apiClient.post(ENDPOINTS.AUTH.LOGIN, credentials);
+
+      if (response.data.success) {
+        const { user, token, refreshToken } = response.data.data;
+
+        // Store in localStorage
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+
+        console.log('✅ Login successful (MOCK):', user.email);
+        return response.data.data;
+      }
+
+      throw new Error(response.data.error?.message || 'Login failed');
     }
 
-    if (response.data.success) {
-      const { user, token, refreshToken } = response.data.data;
+    // ============================================
+    // REAL BACKEND LOGIN
+    // ============================================
+    console.log('🟢 Using REAL API for login');
+
+    try {
+      // Step 1: Validate login credentials
+      // POST /api/LoginRequest?username={email}&password={password}
+      const loginUrl = apiConfig.buildUrl(ENDPOINTS.AUTH.LOGIN, {
+        username: credentials.email,
+        password: credentials.password
+      });
+
+      const loginResponse = await apiClient.post(loginUrl);
+      console.log('Backend login response:', loginResponse.data);
+
+      // Map backend response format
+      const mappedResponse = mapBackendResponse(loginResponse.data);
+
+      if (!mappedResponse.success) {
+        throw new Error(mappedResponse.error?.message || 'Invalid credentials');
+      }
+
+      // Result is RefRoleId (integer)
+      const roleId = mappedResponse.data;
+      const roleName = mapRoleId(roleId);
+
+      console.log(`✅ Login validated. RoleId: ${roleId}, Role: ${roleName}`);
+
+      // Step 2: Fetch employee details
+      // POST /api/Employee/GetEmployeeData?IDorEmail={email}
+      const employeeUrl = apiConfig.buildUrl(ENDPOINTS.EMPLOYEE.GET_DATA, {
+        IDorEmail: credentials.email
+      });
+
+      const employeeResponse = await apiClient.post(employeeUrl);
+      console.log('Backend employee response:', employeeResponse.data);
+
+      const mappedEmployeeResponse = mapBackendResponse(employeeResponse.data);
+
+      if (!mappedEmployeeResponse.success) {
+        throw new Error('Failed to fetch employee details');
+      }
+
+      const employeeData = mappedEmployeeResponse.data;
+
+      // Step 3: Build user object for frontend
+      const user = {
+        id: employeeData.EmpId,
+        empId: employeeData.EmpId,
+        email: employeeData.Email,
+        name: employeeData.Name,
+        firstName: employeeData.Name.split(' ')[0] || employeeData.Name,
+        lastName: employeeData.Name.split(' ').slice(1).join(' ') || '',
+        role: roleName,
+        roleId: roleId,
+        rptEmpId: employeeData.RptEmpId,
+        department: 'General' // Backend doesn't have department field
+      };
+
+      // For backend, we don't use JWT tokens
+      // Store a simple flag to indicate authenticated state
+      const token = `backend-auth-${user.empId}-${Date.now()}`;
+      const refreshToken = token; // Same as token since no refresh mechanism
 
       // Store in localStorage
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
 
-      console.log('✅ Login successful:', user.email);
-      return response.data.data;
-    }
+      console.log('✅ Login successful (REAL):', user.email, 'Role:', user.role);
 
-    throw new Error(response.data.error?.message || 'Login failed');
+      return { user, token, refreshToken };
+
+    } catch (error) {
+      console.error('❌ Login error:', error);
+
+      // Handle backend-specific errors
+      if (error.response?.data) {
+        const backendError = mapBackendResponse(error.response.data);
+        throw new Error(backendError.error?.message || 'Login failed');
+      }
+
+      throw error;
+    }
   },
 
   /**
@@ -54,7 +143,8 @@ const authService = {
       response = await mockDataService.register(userData);
     } else {
       console.log('🟢 Using REAL API for register');
-      response = await apiClient.post(ENDPOINTS.AUTH.REGISTER, userData);
+      // Backend doesn't have register endpoint yet
+      throw new Error('Registration not implemented in backend yet');
     }
 
     if (response.data.success) {
@@ -83,7 +173,8 @@ const authService = {
         await mockDataService.logout();
       } else {
         console.log('🟢 Using REAL API for logout');
-        await apiClient.post(ENDPOINTS.AUTH.LOGOUT);
+        // Backend doesn't have logout endpoint
+        // Just clear local storage
       }
     } finally {
       // Clear localStorage even if API call fails
@@ -109,15 +200,10 @@ const authService = {
       return { token };
     }
 
-    const response = await apiClient.post(ENDPOINTS.AUTH.REFRESH_TOKEN, { refreshToken });
-
-    if (response.data.success) {
-      const { token } = response.data.data;
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
-      return { token };
-    }
-
-    throw new Error('Token refresh failed');
+    // Backend doesn't have token refresh
+    // Just return existing token
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    return { token };
   },
 
   /**
@@ -132,7 +218,41 @@ const authService = {
       response = await mockDataService.getProfile();
     } else {
       console.log('🟢 Using REAL API for getProfile');
-      response = await apiClient.get(ENDPOINTS.AUTH.GET_PROFILE);
+
+      // Get current user from localStorage
+      const user = authService.getCurrentUser();
+      if (!user) {
+        throw new Error('No user logged in');
+      }
+
+      // Fetch latest employee data
+      const employeeUrl = apiConfig.buildUrl(ENDPOINTS.EMPLOYEE.GET_DATA, {
+        IDorEmail: user.email
+      });
+
+      const employeeResponse = await apiClient.post(employeeUrl);
+      const mappedResponse = mapBackendResponse(employeeResponse.data);
+
+      if (!mappedResponse.success) {
+        throw new Error('Failed to fetch profile');
+      }
+
+      const employeeData = mappedResponse.data;
+
+      // Update user object
+      const updatedUser = {
+        ...user,
+        name: employeeData.Name,
+        firstName: employeeData.Name.split(' ')[0] || employeeData.Name,
+        lastName: employeeData.Name.split(' ').slice(1).join(' ') || '',
+        email: employeeData.Email,
+        rptEmpId: employeeData.RptEmpId
+      };
+
+      // Update localStorage
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+
+      return updatedUser;
     }
 
     if (response.data.success) {
@@ -160,7 +280,8 @@ const authService = {
       response = await mockDataService.updateProfile(updates);
     } else {
       console.log('🟢 Using REAL API for updateProfile');
-      response = await apiClient.put(ENDPOINTS.AUTH.UPDATE_PROFILE, updates);
+      // Backend doesn't have update profile endpoint yet
+      throw new Error('Profile update not implemented in backend yet');
     }
 
     if (response.data.success) {
@@ -189,7 +310,8 @@ const authService = {
       response = { data: { success: true } };
     } else {
       console.log('🟢 Using REAL API for changePassword');
-      response = await apiClient.post(ENDPOINTS.AUTH.CHANGE_PASSWORD, passwords);
+      // Backend doesn't have change password endpoint yet
+      throw new Error('Password change not implemented in backend yet');
     }
 
     if (!response.data.success) {

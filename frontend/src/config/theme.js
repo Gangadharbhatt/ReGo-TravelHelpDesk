@@ -1,302 +1,125 @@
-/**
- * MUI Theme Configuration
- * Custom Material-UI theme for ReGo Travel Management System
- */
+export const theme = {
+    // SPACING SCALE
+    spacing: {
+        xs: '4px',
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '24px',
+        xxl: '32px',
+        xxxl: '48px'
+    },
 
-import { createTheme } from '@mui/material/styles';
-
-// ============================================
-// COLOR PALETTE
-// ============================================
-
-const colors = {
+    // PRIMARY COLOR SYSTEM (ReGo Brand Red)
     primary: {
-        main: '#b91c1c', // Corporate red
-        light: '#dc2626',
-        dark: '#991b1b',
-        contrastText: '#ffffff'
+        50: '#FEF2F2',   // Lightest backgrounds
+        100: '#FEE2E2',
+        200: '#FECACA',
+        300: '#FCA5A5',
+        400: '#F87171',
+        500: '#DC2626',  // Main action color (ReGo Brand Red)
+        600: '#B91C1C',  // Hover state
+        700: '#991B1B',
+        800: '#7F1D1D',  // Darkest text on light
+        900: '#6B1515'
     },
-    secondary: {
-        main: '#fef2f2', // Light red background
-        light: '#ffffff',
-        dark: '#fee2e2',
-        contrastText: '#1f2937'
+
+    // NEUTRAL PALETTE
+    neutral: {
+        0: '#FFFFFF',    // Pure white
+        50: '#F9FAFB',   // Lightest gray background
+        100: '#F3F4F6',  // Alternating row color, disabled state
+        200: '#E5E7EB',  // Borders, dividers
+        300: '#D1D5DB',  // Input borders
+        400: '#9CA3AF',  // Secondary text
+        500: '#6B7280',  // Medium gray text
+        600: '#4B5563',  // Darker gray
+        700: '#374151',  // Dark text
+        800: '#1F2937',  // Very dark text
+        900: '#111827'   // Darkest text
     },
-    error: {
-        main: '#dc2626',
-        light: '#ef4444',
-        dark: '#b91c1c'
+
+    // SEMANTIC COLORS
+    success: { light: '#D1FAE5', main: '#10B981', dark: '#047857' },
+    warning: { light: '#FEF3C7', main: '#F59E0B', dark: '#B45309' },
+    error: { light: '#FEE2E2', main: '#EF4444', dark: '#B91C1C' },
+    info: { light: '#DBEAFE', main: '#3B82F6', dark: '#1D4ED8' },
+
+    // STATUS CHIP COLORS
+    statusColors: {
+        pending: { bg: '#FEF3C7', text: '#92400E', border: '#FCD34D' },
+        approved: { bg: '#D1FAE5', text: '#065F46', border: '#6EE7B7' },
+        rejected: { bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5' },
+        inProgress: { bg: '#DBEAFE', text: '#1E40AF', border: '#93C5FD' },
+        draft: { bg: '#F3F4F6', text: '#374151', border: '#D1D5DB' },
+        completed: { bg: '#D1FAE5', text: '#065F46', border: '#6EE7B7' },
+        cancelled: { bg: '#F3F4F6', text: '#6B7280', border: '#D1D5DB' },
+        onHold: { bg: '#FEF3C7', text: '#92400E', border: '#FCD34D' }
     },
-    warning: {
-        main: '#f59e0b',
-        light: '#fbbf24',
-        dark: '#d97706'
+
+    // TYPOGRAPHY SYSTEM
+    typography: {
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: {
+            xs: '11px',
+            sm: '12px',
+            base: '14px',
+            md: '16px',
+            lg: '18px',
+            xl: '20px',
+            xxl: '24px',
+            xxxl: '32px'
+        },
+        fontWeight: { regular: 400, medium: 500, semibold: 600, bold: 700 },
+        lineHeight: { tight: 1.25, normal: 1.5, relaxed: 1.75 }
     },
-    info: {
-        main: '#3b82f6',
-        light: '#60a5fa',
-        dark: '#2563eb'
+
+    // SHADOW SYSTEM
+    shadows: {
+        none: 'none',
+        xs: '0 1px 2px rgba(0, 0, 0, 0.04)',
+        sm: '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+        md: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04)',
+        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03)',
+        card: '0px 2px 12px rgba(0, 0, 0, 0.08)',  // Specific for dashboard cards
+        inner: 'inset 0 2px 4px rgba(0, 0, 0, 0.04)'
     },
-    success: {
-        main: '#10b981',
-        light: '#34d399',
-        dark: '#059669'
+
+    // BORDER RADIUS
+    borderRadius: {
+        none: '0',
+        sm: '4px',
+        md: '6px',
+        lg: '8px',
+        xl: '12px',
+        xxl: '16px',
+        full: '9999px'
     },
-    grey: {
-        50: '#f9fafb',
-        100: '#f3f4f6',
-        200: '#e5e7eb',
-        300: '#d1d5db',
-        400: '#9ca3af',
-        500: '#6b7280',
-        600: '#4b5563',
-        700: '#374151',
-        800: '#1f2937',
-        900: '#111827'
+
+    // BREAKPOINTS
+    breakpoints: {
+        mobile: '480px',
+        tablet: '768px',
+        laptop: '1024px',
+        desktop: '1280px',
+        largeDesktop: '1536px'
+    },
+
+    // Z-INDEX HIERARCHY
+    zIndex: {
+        dropdown: 100,
+        sticky: 200,
+        modal: 300,
+        tooltip: 400,
+        toast: 500
+    },
+
+    // TRANSITIONS
+    transitions: {
+        fast: '150ms ease',
+        normal: '250ms ease',
+        slow: '350ms ease',
+        spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
     }
 };
-
-// ============================================
-// TYPOGRAPHY
-// ============================================
-
-const typography = {
-    fontFamily: [
-        'Inter',
-        '-apple-system',
-        'BlinkMacSystemFont',
-        '"Segoe UI"',
-        'Roboto',
-        '"Helvetica Neue"',
-        'Arial',
-        'sans-serif'
-    ].join(','),
-    h1: {
-        fontSize: '2.5rem',
-        fontWeight: 700,
-        lineHeight: 1.2
-    },
-    h2: {
-        fontSize: '2rem',
-        fontWeight: 700,
-        lineHeight: 1.3
-    },
-    h3: {
-        fontSize: '1.75rem',
-        fontWeight: 600,
-        lineHeight: 1.4
-    },
-    h4: {
-        fontSize: '1.5rem',
-        fontWeight: 600,
-        lineHeight: 1.4
-    },
-    h5: {
-        fontSize: '1.25rem',
-        fontWeight: 600,
-        lineHeight: 1.5
-    },
-    h6: {
-        fontSize: '1rem',
-        fontWeight: 600,
-        lineHeight: 1.5
-    },
-    subtitle1: {
-        fontSize: '1rem',
-        fontWeight: 500,
-        lineHeight: 1.75
-    },
-    subtitle2: {
-        fontSize: '0.875rem',
-        fontWeight: 500,
-        lineHeight: 1.57
-    },
-    body1: {
-        fontSize: '1rem',
-        lineHeight: 1.5
-    },
-    body2: {
-        fontSize: '0.875rem',
-        lineHeight: 1.43
-    },
-    button: {
-        fontSize: '0.875rem',
-        fontWeight: 600,
-        textTransform: 'none'
-    },
-    caption: {
-        fontSize: '0.75rem',
-        lineHeight: 1.66
-    },
-    overline: {
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        letterSpacing: '0.5px',
-        textTransform: 'uppercase'
-    }
-};
-
-// ============================================
-// SPACING
-// ============================================
-
-const spacing = 8; // Base spacing unit (8px)
-
-// ============================================
-// BREAKPOINTS
-// ============================================
-
-const breakpoints = {
-    values: {
-        xs: 0,
-        sm: 600,
-        md: 960,
-        lg: 1280,
-        xl: 1920
-    }
-};
-
-// ============================================
-// SHAPE
-// ============================================
-
-const shape = {
-    borderRadius: 8
-};
-
-// ============================================
-// SHADOWS
-// ============================================
-
-const shadows = [
-    'none',
-    '0px 2px 4px rgba(0, 0, 0, 0.05)',
-    '0px 4px 8px rgba(0, 0, 0, 0.08)',
-    '0px 8px 16px rgba(0, 0, 0, 0.1)',
-    '0px 12px 24px rgba(0, 0, 0, 0.12)',
-    '0px 16px 32px rgba(0, 0, 0, 0.14)',
-    '0px 20px 40px rgba(0, 0, 0, 0.16)',
-    '0px 24px 48px rgba(0, 0, 0, 0.18)',
-    '0px 28px 56px rgba(0, 0, 0, 0.2)',
-    '0px 32px 64px rgba(0, 0, 0, 0.22)',
-    '0px 36px 72px rgba(0, 0, 0, 0.24)',
-    '0px 40px 80px rgba(0, 0, 0, 0.26)',
-    '0px 44px 88px rgba(0, 0, 0, 0.28)',
-    '0px 48px 96px rgba(0, 0, 0, 0.3)',
-    '0px 52px 104px rgba(0, 0, 0, 0.32)',
-    '0px 56px 112px rgba(0, 0, 0, 0.34)',
-    '0px 60px 120px rgba(0, 0, 0, 0.36)',
-    '0px 64px 128px rgba(0, 0, 0, 0.38)',
-    '0px 68px 136px rgba(0, 0, 0, 0.4)',
-    '0px 72px 144px rgba(0, 0, 0, 0.42)',
-    '0px 76px 152px rgba(0, 0, 0, 0.44)',
-    '0px 80px 160px rgba(0, 0, 0, 0.46)',
-    '0px 84px 168px rgba(0, 0, 0, 0.48)',
-    '0px 88px 176px rgba(0, 0, 0, 0.5)',
-    '0px 92px 184px rgba(0, 0, 0, 0.52)'
-];
-
-// ============================================
-// COMPONENT OVERRIDES
-// ============================================
-
-const components = {
-    MuiButton: {
-        styleOverrides: {
-            root: {
-                borderRadius: 8,
-                padding: '10px 24px',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                textTransform: 'none',
-                boxShadow: 'none',
-                '&:hover': {
-                    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.12)'
-                }
-            },
-            contained: {
-                '&:hover': {
-                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)'
-                }
-            }
-        }
-    },
-    MuiCard: {
-        styleOverrides: {
-            root: {
-                borderRadius: 12,
-                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
-                '&:hover': {
-                    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.12)'
-                }
-            }
-        }
-    },
-    MuiPaper: {
-        styleOverrides: {
-            root: {
-                borderRadius: 12
-            },
-            elevation1: {
-                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)'
-            },
-            elevation2: {
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.08)'
-            },
-            elevation3: {
-                boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
-            }
-        }
-    },
-    MuiTextField: {
-        styleOverrides: {
-            root: {
-                '& .MuiOutlinedInput-root': {
-                    borderRadius: 8
-                }
-            }
-        }
-    },
-    MuiChip: {
-        styleOverrides: {
-            root: {
-                borderRadius: 6,
-                fontWeight: 500
-            }
-        }
-    },
-    MuiTableCell: {
-        styleOverrides: {
-            head: {
-                fontWeight: 600,
-                backgroundColor: colors.grey[50]
-            }
-        }
-    },
-    MuiAppBar: {
-        styleOverrides: {
-            root: {
-                boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)'
-            }
-        }
-    }
-};
-
-// ============================================
-// CREATE THEME
-// ============================================
-
-const theme = createTheme({
-    palette: colors,
-    typography,
-    spacing,
-    breakpoints,
-    shape,
-    shadows,
-    components
-});
-
-export default theme;
-
-// Export individual parts for use elsewhere
-export { colors, typography, spacing, breakpoints, shape };
