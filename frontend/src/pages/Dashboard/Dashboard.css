@@ -1,0 +1,9 @@
+/* Dashboard specific styles */
+
+.dashboard-error-container {
+    padding: 20px;
+    text-align: center;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    margin: 20px;
+}

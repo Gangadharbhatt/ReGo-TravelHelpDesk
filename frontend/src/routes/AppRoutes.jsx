@@ -13,7 +13,7 @@ function AppRoutes() {
     <Routes>
       Public routes
       <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<LoginPage/>}/>
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<Register />} />
 
       {/* Protected routes */}
@@ -21,22 +21,17 @@ function AppRoutes() {
         path="/dashboard"
         element={
           // <PrivateRoute>
-            <DashboardRouter />
+          <DashboardRouter />
           // </PrivateRoute>
         }
       />
 
       {/* Placeholder for forgot password */}
-      <Route 
-        path="/forgot-password" 
+      <Route
+        path="/forgot-password"
         element={
-          // <div style={{ padding: '50px', textAlign: 'center', backgroundColor:'#fef2f2' }}>
-          //   <h2>Forgot Password</h2>
-          //   <p>This feature will be implemented in a later phase.</p>
-          //   <a href="/login">Back to Login</a>
-          // </div>
           <ForgotPassword />
-        } 
+        }
       />
 
       {/* Routes to be added in later stages */}

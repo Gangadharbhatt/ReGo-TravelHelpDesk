@@ -6,6 +6,8 @@ import DashboardManager from './DashboardManager';
 // import DashboardSVP from './DashboardSVP';
 // import DashboardAdmin from './DashboardAdmin';
 import TravelDeskPortal from './TravelDeskPortal';
+import './Dashboard.css';
+
 /**
  * Dashboard Router - Shows correct dashboard based on user role
  */
@@ -20,25 +22,25 @@ const DashboardRouter = () => {
   switch (user.role) {
     case 'EMPLOYEE':
       return <DashboardEmployee />;
-    
+
     case 'MANAGER':
     case 'AVP':
       return <DashboardManager />;
-    
+
     case 'SVP':
     case 'CHRO':
     case 'FINANCE':
       // Temporarily show Manager dashboard until we create SVP dashboard
       return <DashboardManager />;
-    
+
     case 'ADMIN':
     case 'TRAVEL_DESK':
       // Temporarily show Employee dashboard until we create Admin dashboard
       return <TravelDeskPortal />;
-    
+
     default:
       return (
-        <div style={{ padding: '20px', textAlign: 'center' }}>
+        <div className="dashboard-error-container">
           <h2>Unknown Role: {user.role}</h2>
           <p>Please contact administrator</p>
         </div>
