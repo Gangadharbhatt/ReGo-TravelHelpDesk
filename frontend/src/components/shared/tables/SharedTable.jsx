@@ -2,9 +2,17 @@
 import React from 'react';
 import { Table, TableContainer, Paper } from '@mui/material';
 
-const SharedTable = ({ children }) => (
-  <TableContainer component={Paper}>
-    <Table>{children}</Table>
+const SharedTable = ({ children, stickyHeader = false, maxHeight, sx = {} }) => (
+  <TableContainer
+    component={Paper}
+    sx={{
+      maxHeight: maxHeight,
+      ...sx
+    }}
+  >
+    <Table stickyHeader={stickyHeader}>
+      {children}
+    </Table>
   </TableContainer>
 );
 
