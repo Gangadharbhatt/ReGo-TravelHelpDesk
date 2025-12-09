@@ -71,7 +71,7 @@ const documentService = {
 
   /**
    * Add document for employee WITH metadata
-   * API: POST /api/employee/AddDocumentWithMetadata
+   * API: POST /api/employee/AddDocument
    */
   addDocument: async (empId, documentId, file) => {
     console.log('📄 Adding document:', { empId, documentId, fileName: file.name });
@@ -86,14 +86,11 @@ const documentService = {
     const fileBase64 = await documentService.fileToBase64(file);
     console.log('📄 File converted to Base64, length:', fileBase64.length);
 
-    // Call API with metadata
-    const response = await api.addDocumentWithMetadata(
+    // Call API - mockApi.addDocument takes (empId, documentId, document)
+    const response = await api.addDocument(
       empId,
       documentId,
-      fileBase64,
-      file.type,      // FileType (e.g., "image/png", "application/pdf")
-      file.name,      // FileName (e.g., "passport.jpg")
-      file.size       // FileSize in bytes
+      fileBase64
     );
 
     if (response.status !== 'Success') {
