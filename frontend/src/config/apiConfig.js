@@ -4,9 +4,9 @@
  */
 
 // ============================================
-// MOCK API TOGGLE
+// MOCK API TOGGLE - Environment Variable
 // ============================================
-const USE_MOCK_API = true; // ✅ Set to FALSE to use real API
+const USE_MOCK_API = process.env.REACT_APP_ENABLE_MOCK_API === 'true';
 
 // ============================================
 // API BASE URL
