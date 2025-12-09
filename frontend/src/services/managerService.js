@@ -1,11 +1,10 @@
 /**
  * Manager Service
  * Handles all manager-specific API calls
- * Connected to real backend APIs
+ * Delegates to centralized apiService for Mock/Real switching
  */
 
-import apiClient from '../api/client';
-import apiConfig, { ENDPOINTS } from '../config/apiConfig';
+import api from './apiService';
 
 // Status labels mapping
 const TRAVEL_STATUS_LABELS = {
@@ -19,34 +18,19 @@ const TRAVEL_STATUS_LABELS = {
 const managerService = {
   /**
    * Get team members reporting to manager
-   * API: POST /api/manager/GetEmployeesByRptId
-   * @param {string|number} managerId - Manager's employee ID
+   * delegates to api.getEmployeesByRptId
    */
   getTeam: async (managerId) => {
-    if (apiConfig.USE_MOCK_API) {
-      console.log('🔵 Using MOCK API for getTeam');
-      return [
-        { empId: '101', name: 'John Doe', email: 'john@demo.com' },
-        { empId: '102', name: 'Jane Smith', email: 'jane@demo.com' }
-      ];
-    }
+    console.log('🟢 managerService: Getting team for:', managerId);
 
-    console.log('🟢 Getting team for managerId:', managerId);
+    const response = await api.getEmployeesByRptId(managerId);
 
-    const formData = new FormData();
-    formData.append('RptId', managerId);
-
-    const response = await apiClient.post('/api/manager/GetEmployeesByRptId', formData);
-    console.log('Team API response:', response.data);
-
-    if (response.data?.status !== 'Success' || !response.data?.result) {
+    if (response.status !== 'Success' || !response.result) {
       console.warn('No team members found');
       return [];
     }
 
-    const team = Array.isArray(response.data.result)
-      ? response.data.result
-      : [response.data.result];
+    const team = Array.isArray(response.result) ? response.result : [response.result];
 
     return team.map(member => ({
       empId: member.empId,
@@ -57,42 +41,19 @@ const managerService = {
 
   /**
    * Get travel requests for team members
-   * API: POST /api/manager/TravelDetailByRptId
-   * @param {string|number} managerId - Manager's employee ID
+   * delegates to api.getTravelDetailByRptId
    */
   getTeamTravel: async (managerId) => {
-    if (apiConfig.USE_MOCK_API) {
-      console.log('🔵 Using MOCK API for getTeamTravel');
-      return [
-        {
-          id: 'tr-001',
-          empId: '101',
-          destination: 'Munich, Germany',
-          departureDate: '2025-12-10',
-          returnDate: '2025-12-20',
-          status: 2,
-          statusLabel: 'Manager Approved',
-          purpose: 'Project kickoff'
-        }
-      ];
-    }
+    console.log('🟢 managerService: Getting team travel for:', managerId);
 
-    console.log('🟢 Getting team travel for managerId:', managerId);
+    const response = await api.getTravelDetailByRptId(managerId);
 
-    const formData = new FormData();
-    formData.append('RptId', managerId.toString());
-
-    const response = await apiClient.post('/api/manager/TravelDetailByRptId', formData);
-    console.log('Team travel API response:', response.data);
-
-    if (response.data?.status !== 'Success' || !response.data?.result) {
+    if (response.status !== 'Success' || !response.result) {
       console.warn('No team travel data found');
       return [];
     }
 
-    const travels = Array.isArray(response.data.result)
-      ? response.data.result
-      : [response.data.result];
+    const travels = Array.isArray(response.result) ? response.result : [response.result];
 
     return travels.map(travel => ({
       id: travel.tId || travel.TID || `${travel.empId}-${travel.country}-${travel.travelStartDate}`,
@@ -115,7 +76,7 @@ const managerService = {
   },
 
   /**
-   * Alias for getTeamTravel (backward compatibility)
+   * Alias for getTeamTravel
    */
   getManagerTravel: async (managerId) => {
     return managerService.getTeamTravel(managerId);
@@ -123,18 +84,12 @@ const managerService = {
 
   /**
    * Create new travel request
-   * API: POST /api/manager/InsertTravelDetail
-   * @param {object} travelData - Travel request data
+   * delegates to api.insertTravelDetail
    */
   createTravelRequest: async (travelData) => {
-    if (apiConfig.USE_MOCK_API) {
-      console.log('🔵 Using MOCK API for createTravelRequest');
-      return { success: true, message: 'Travel request created' };
-    }
+    console.log('🟢 managerService: Creating travel request:', travelData);
 
-    console.log('🟢 Creating travel request:', travelData);
-
-    const payload = [{
+    const payload = {
       empId: String(travelData.empId),
       country: travelData.country,
       city: travelData.city,
@@ -144,49 +99,33 @@ const managerService = {
       travelEndDate: travelData.travelEndDate || travelData.returnDate,
       status: travelData.status || 0,
       rptEmpId: String(travelData.rptEmpId)
-    }];
+    };
 
-    const response = await apiClient.post('/api/manager/InsertTravelDetail', payload, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // Note: realApi.js handles wrapping this in an array if needed
+    // mockApi.js handles pushing it directly
+    const response = await api.insertTravelDetail(payload);
 
-    console.log('Create travel response:', response.data);
-
-    if (response.data?.status !== 'Success') {
-      throw new Error(response.data?.result || 'Failed to create travel request');
+    if (response.status !== 'Success') {
+      throw new Error(response.result || 'Failed to create travel request');
     }
 
-    return response.data.result;
+    return response.result;
   },
 
   /**
    * Update travel status
-   * API: POST /api/UpdateTravelStatus
-   * @param {string} travelId - Travel ID (TID)
-   * @param {number} status - New status
+   * delegates to api.updateTravelStatus
    */
   updateTravelStatus: async (travelId, status) => {
-    if (apiConfig.USE_MOCK_API) {
-      console.log('🔵 Using MOCK API for updateTravelStatus', { travelId, status });
-      return { success: true, message: 'Status updated' };
-    }
+    console.log('🟢 managerService: Updating status:', { travelId, status });
 
-    console.log('🟢 Updating travel status:', { travelId, status });
+    const response = await api.updateTravelStatus(travelId, status);
 
-    const formData = new FormData();
-    formData.append('TID', travelId);
-    formData.append('Status', status);
-
-    const response = await apiClient.post('/api/UpdateTravelStatus', formData);
-    console.log('Update status response:', response.data);
-
-    if (response.data?.status !== 'Success') {
+    if (response.status !== 'Success') {
       throw new Error('Failed to update travel status');
     }
 
-    return response.data.result;
+    return response.result;
   },
 
   /**

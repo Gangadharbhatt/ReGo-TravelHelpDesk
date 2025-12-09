@@ -58,8 +58,8 @@ import {
 // Animation variants
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     y: 0,
     transition: {
       duration: 0.4,
@@ -73,8 +73,8 @@ const pageVariants = {
 
 const cardVariants = {
   initial: { opacity: 0, y: 16 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }
   },
@@ -97,8 +97,8 @@ const staggerContainer = {
 
 const staggerItem = {
   initial: { opacity: 0, x: -12 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     x: 0,
     transition: { duration: 0.3, ease: [0, 0, 0.2, 1] }
   }
@@ -131,13 +131,13 @@ const buttonVariants = {
 
 const uploadZoneVariants = {
   initial: { borderColor: "#cbd5e1", backgroundColor: "#f8fafc" },
-  hover: { 
-    borderColor: "#b91c1c", 
+  hover: {
+    borderColor: "#b91c1c",
     backgroundColor: "rgba(185, 28, 28, 0.03)",
     transition: { duration: 0.2 }
   },
-  active: { 
-    borderColor: "#b91c1c", 
+  active: {
+    borderColor: "#b91c1c",
     backgroundColor: "rgba(185, 28, 28, 0.08)",
     scale: 1.01,
     transition: { duration: 0.2 }
@@ -318,79 +318,79 @@ const DashboardEmployee = () => {
 
   // View document
   // View document - UPDATED
-const handleViewDocument = async (doc) => {
-  const uploaded = uploadedDocuments[doc.id];
-  if (!uploaded) return;
+  const handleViewDocument = async (doc) => {
+    const uploaded = uploadedDocuments[doc.id];
+    if (!uploaded) return;
 
-  setLoadingPreview(true);
-  try {
-    // Check if we already have the base64 cached
-    if (uploaded.base64String) {
-      setPreviewData({
-        fileName: uploaded.fileName,
-        fileType: uploaded.fileType,
-        base64: uploaded.base64String,
-      });
-      setShowPreviewModal(true);
+    setLoadingPreview(true);
+    try {
+      // Check if we already have the base64 cached
+      if (uploaded.base64String) {
+        setPreviewData({
+          fileName: uploaded.fileName,
+          fileType: uploaded.fileType,
+          base64: uploaded.base64String,
+        });
+        setShowPreviewModal(true);
+        setLoadingPreview(false);
+        return;
+      }
+
+      showSnackbarMessage('Loading document...', 'info');
+
+      // Fetch document with content from API
+      const fileData = await documentService.getDocumentWithContent(user.empId, doc.id);
+
+      if (fileData && fileData.base64String) {
+        // Cache the base64 in local state
+        setUploadedDocuments(prev => ({
+          ...prev,
+          [doc.id]: {
+            ...prev[doc.id],
+            base64String: fileData.base64String,
+            fileType: fileData.fileType || prev[doc.id]?.fileType
+          }
+        }));
+
+        setPreviewData({
+          fileName: uploaded.fileName || fileData.fileName,
+          fileType: fileData.fileType || uploaded.fileType,
+          base64: fileData.base64String,
+        });
+        setShowPreviewModal(true);
+      } else {
+        showSnackbarMessage('Document preview not available', 'warning');
+      }
+    } catch (error) {
+      console.error('Error viewing document:', error);
+      showSnackbarMessage('Failed to load document', 'error');
+    } finally {
       setLoadingPreview(false);
-      return;
     }
-
-    showSnackbarMessage('Loading document...', 'info');
-    
-    // Fetch document with content from API
-    const fileData = await documentService.getDocumentWithContent(user.empId, doc.id);
-    
-    if (fileData && fileData.base64String) {
-      // Cache the base64 in local state
-      setUploadedDocuments(prev => ({
-        ...prev,
-        [doc.id]: { 
-          ...prev[doc.id], 
-          base64String: fileData.base64String,
-          fileType: fileData.fileType || prev[doc.id]?.fileType
-        }
-      }));
-      
-      setPreviewData({
-        fileName: uploaded.fileName || fileData.fileName,
-        fileType: fileData.fileType || uploaded.fileType,
-        base64: fileData.base64String,
-      });
-      setShowPreviewModal(true);
-    } else {
-      showSnackbarMessage('Document preview not available', 'warning');
-    }
-  } catch (error) {
-    console.error('Error viewing document:', error);
-    showSnackbarMessage('Failed to load document', 'error');
-  } finally {
-    setLoadingPreview(false);
-  }
-};
+  };
   // Delete document
-const handleDeleteDocument = async (doc) => {
-  if (!window.confirm(`Are you sure you want to delete "${doc.name}"?`)) return;
+  const handleDeleteDocument = async (doc) => {
+    if (!window.confirm(`Are you sure you want to delete "${doc.name}"?`)) return;
 
-  try {
-    showSnackbarMessage('Deleting document...', 'info');
-    
-    // Call the delete API
-    await documentService.deleteDocument(user.empId, doc.id);
-    
-    // Remove from local state
-    setUploadedDocuments(prev => {
-      const newState = { ...prev };
-      delete newState[doc.id];
-      return newState;
-    });
+    try {
+      showSnackbarMessage('Deleting document...', 'info');
 
-    showSnackbarMessage(`${doc.name} deleted successfully!`, 'success');
-  } catch (error) {
-    console.error('Error deleting document:', error);
-    showSnackbarMessage(error.message || 'Failed to delete document', 'error');
-  }
-};
+      // Call the delete API
+      await documentService.deleteDocument(user.empId, doc.id);
+
+      // Remove from local state
+      setUploadedDocuments(prev => {
+        const newState = { ...prev };
+        delete newState[doc.id];
+        return newState;
+      });
+
+      showSnackbarMessage(`${doc.name} deleted successfully!`, 'success');
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      showSnackbarMessage(error.message || 'Failed to delete document', 'error');
+    }
+  };
 
   // Dropzone configuration
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
@@ -505,20 +505,7 @@ const handleDeleteDocument = async (doc) => {
                 </motion.div>
               </Box>
               <Box sx={{ flexGrow: 1 }} />
-              <motion.div
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-              >
-                <SharedButton
-                  variant="contained"
-                  startIcon={<Flight />}
-                  onClick={() => navigate('/create-request')}
-                  sx={{ bgcolor: '#b91c1c', '&:hover': { bgcolor: '#991b1b' } }}
-                >
-                  Raise Travel Request
-                </SharedButton>
-              </motion.div>
+              {/* Button Removed as Employees cannot raise requests directly */}
             </Box>
           </motion.div>
 
@@ -757,7 +744,7 @@ const handleDeleteDocument = async (doc) => {
                         pointerEvents: 'none'
                       }}
                     />
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, position: 'relative' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <motion.div
@@ -790,8 +777,8 @@ const handleDeleteDocument = async (doc) => {
                           <IconButton
                             size="small"
                             onClick={fetchDocumentsData}
-                            sx={{ 
-                              color: 'white', 
+                            sx={{
+                              color: 'white',
                               '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
                             }}
                           >
@@ -802,16 +789,16 @@ const handleDeleteDocument = async (doc) => {
                         </Tooltip>
                       </Box>
                     </Box>
-                    
+
                     <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
                       Please upload all required documents. Supported formats: PNG, JPG, PDF (Max 5MB)
                     </Typography>
-                    
+
                     {/* Animated Progress Bar */}
                     <Box sx={{ position: 'relative' }}>
-                      <Box sx={{ 
-                        height: 10, 
-                        borderRadius: 5, 
+                      <Box sx={{
+                        height: 10,
+                        borderRadius: 5,
                         bgcolor: 'rgba(255,255,255,0.2)',
                         overflow: 'hidden'
                       }}>
@@ -822,19 +809,19 @@ const handleDeleteDocument = async (doc) => {
                           style={{
                             height: '100%',
                             borderRadius: 5,
-                            background: uploadStats.uploaded === uploadStats.total 
+                            background: uploadStats.uploaded === uploadStats.total
                               ? 'linear-gradient(90deg, #4ade80, #22c55e)'
                               : 'linear-gradient(90deg, #fbbf24, #f59e0b)',
                           }}
                         />
                       </Box>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          position: 'absolute', 
-                          right: 0, 
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          position: 'absolute',
+                          right: 0,
                           top: 14,
-                          opacity: 0.9 
+                          opacity: 0.9
                         }}
                       >
                         {Math.round(uploadStats.percentage)}% Complete
@@ -844,14 +831,14 @@ const handleDeleteDocument = async (doc) => {
                 </motion.div>
 
                 {/* Documents Grid */}
-                <Box sx={{ 
-                  maxHeight: '50vh', 
+                <Box sx={{
+                  maxHeight: '50vh',
                   overflowY: 'auto',
                   pr: 1,
                   '&::-webkit-scrollbar': { width: '6px' },
                   '&::-webkit-scrollbar-track': { background: '#f1f5f9', borderRadius: '3px' },
-                  '&::-webkit-scrollbar-thumb': { 
-                    background: '#cbd5e1', 
+                  '&::-webkit-scrollbar-thumb': {
+                    background: '#cbd5e1',
                     borderRadius: '3px',
                     '&:hover': { background: '#94a3b8' }
                   },
@@ -864,7 +851,7 @@ const handleDeleteDocument = async (doc) => {
                     {documentTypes.map((doc, index) => {
                       const uploaded = uploadedDocuments[doc.id];
                       const isUploaded = !!uploaded;
-                      
+
                       return (
                         <motion.div
                           key={doc.id}
@@ -915,8 +902,8 @@ const handleDeleteDocument = async (doc) => {
                             {/* Document Info */}
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-                                <Typography 
-                                  variant="subtitle1" 
+                                <Typography
+                                  variant="subtitle1"
                                   fontWeight={600}
                                   sx={{ color: '#1e293b' }}
                                 >
@@ -944,7 +931,7 @@ const handleDeleteDocument = async (doc) => {
                                   />
                                 </motion.div>
                               </Box>
-                              
+
                               {isUploaded ? (
                                 <motion.div
                                   initial={{ opacity: 0, y: 5 }}
@@ -952,9 +939,9 @@ const handleDeleteDocument = async (doc) => {
                                   transition={{ delay: index * 0.03 + 0.2 }}
                                 >
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                    <Typography 
-                                      variant="caption" 
-                                      sx={{ 
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
                                         color: '#64748b',
                                         maxWidth: 200,
                                         overflow: 'hidden',
@@ -1057,31 +1044,31 @@ const handleDeleteDocument = async (doc) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <Box 
-                    sx={{ 
-                      mt: 3, 
+                  <Box
+                    sx={{
+                      mt: 3,
                       pt: 3,
                       borderTop: '1px solid #e2e8f0',
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
+                      display: 'flex',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
                       flexWrap: 'wrap',
                       gap: 2
                     }}
                   >
-                    <Button 
-                      onClick={() => setShowDocumentsModal(false)} 
+                    <Button
+                      onClick={() => setShowDocumentsModal(false)}
                       sx={{ color: '#64748b', '&:hover': { bgcolor: '#f1f5f9' } }}
                     >
                       Cancel
                     </Button>
-                    
+
                     <Box sx={{ display: 'flex', gap: 2 }}>
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
                           variant="outlined"
                           onClick={() => showSnackbarMessage('Progress saved!', 'info')}
-                          sx={{ 
+                          sx={{
                             borderColor: '#e2e8f0',
                             color: '#64748b',
                             '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
@@ -1090,7 +1077,7 @@ const handleDeleteDocument = async (doc) => {
                           Save Draft
                         </Button>
                       </motion.div>
-                      
+
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
                           variant="contained"
@@ -1108,8 +1095,8 @@ const handleDeleteDocument = async (doc) => {
                             '&.Mui-disabled': { bgcolor: '#e2e8f0', color: '#94a3b8' }
                           }}
                         >
-                          {uploadStats.uploaded === uploadStats.total 
-                            ? 'Submit All Documents' 
+                          {uploadStats.uploaded === uploadStats.total
+                            ? 'Submit All Documents'
                             : `Submit (${uploadStats.uploaded}/${uploadStats.total})`
                           }
                         </Button>
