@@ -265,7 +265,7 @@ const DashboardManager = () => {
         </Grid>
 
         {/* Recent Applications Table */}
-        <SharedTable>
+        <SharedTable stickyHeader maxHeight="500px">
           <TableHeader
             columns={[
               { id: 'id', label: 'Request ID' },
