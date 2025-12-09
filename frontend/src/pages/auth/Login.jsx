@@ -30,8 +30,8 @@ const loginSchema = Yup.object().shape({
 // Animation variants
 const containerVariants = {
   initial: { opacity: 0, y: 20 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }
   }
@@ -49,7 +49,7 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     console.log('🔐 Login: Submitting for:', values.email);
-    
+
     try {
       const result = await dispatch(login(values)).unwrap();
       console.log('🔐 Login: Success:', result);
@@ -94,17 +94,17 @@ const Login = () => {
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
             >
-              <Flight 
-                sx={{ 
-                  fontSize: 70, 
-                  color: '#b91c1c', 
-                  mb: 2 
-                }} 
+              <Flight
+                sx={{
+                  fontSize: 70,
+                  color: '#b91c1c',
+                  mb: 2
+                }}
               />
             </motion.div>
-            <Typography 
-              variant="h5" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              sx={{
                 fontWeight: 600,
                 color: '#b91c1c'
               }}
@@ -129,9 +129,9 @@ const Login = () => {
           )}
 
           <Formik
-            initialValues={{ 
-              email: '', 
-              password: '' 
+            initialValues={{
+              email: '',
+              password: ''
             }}
             validationSchema={loginSchema}
             onSubmit={handleSubmit}
@@ -164,6 +164,8 @@ const Login = () => {
                   startIcon={loading ? <LoadingSpinner size={20} /> : <LockOutlined />}
                   sx={{
                     py: 1.5,
+                    minHeight: '48px',  // Fixed height prevents shift
+                    minWidth: '200px',  // Fixed minimum width
                     bgcolor: '#b91c1c',
                     '&:hover': {
                       bgcolor: '#8b1f1f'
@@ -177,7 +179,7 @@ const Login = () => {
                   <SharedButton
                     variant="text"
                     onClick={() => navigate('/forgot-password')}
-                    sx={{ 
+                    sx={{
                       color: '#b91c1c',
                       '&:hover': {
                         bgcolor: 'transparent',
