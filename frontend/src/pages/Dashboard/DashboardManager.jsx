@@ -264,6 +264,19 @@ const DashboardManager = () => {
           ))}
         </Grid>
 
+        {/* Filters */}
+        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+            <FilterButton
+              key={status}
+              label={status === 'ALL' ? 'All Requests' : status.charAt(0) + status.slice(1).toLowerCase()}
+              value={status}
+              filterStatus={filterStatus}
+              setFilterStatus={setFilterStatus}
+            />
+          ))}
+        </Stack>
+
         {/* Recent Applications Table */}
         <SharedTable stickyHeader maxHeight="500px">
           <TableHeader
