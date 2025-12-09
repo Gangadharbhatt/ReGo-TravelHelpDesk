@@ -39,9 +39,9 @@ const mockDB = {
   ],
 
   travels: [
-    { empId: '787', country: 'Germany', city: 'Berlin', remark: 'Client meeting', suggestedDate: '2025-11-28T00:00:00', travelStartDate: '2025-12-01T00:00:00', travelEndDate: '2025-12-05T00:00:00', status: 2, rptEmpId: '828' },
-    { empId: '436', country: 'Germany', city: 'Munich', remark: 'Project kickoff', suggestedDate: '2025-11-27T00:00:00', travelStartDate: '2025-12-10T00:00:00', travelEndDate: '2025-12-20T00:00:00', status: 1, rptEmpId: '128' },
-    { empId: '828', country: 'USA', city: 'New York', remark: 'Annual conference', suggestedDate: '2025-11-25T00:00:00', travelStartDate: '2025-12-15T00:00:00', travelEndDate: '2025-12-20T00:00:00', status: 0, rptEmpId: '2' },
+    { tId: 101, empId: '787', country: 'Germany', city: 'Berlin', remark: 'Client meeting', suggestedDate: '2025-11-28T00:00:00', travelStartDate: '2025-12-01T00:00:00', travelEndDate: '2025-12-05T00:00:00', status: 2, rptEmpId: '828' },
+    { tId: 102, empId: '436', country: 'Germany', city: 'Munich', remark: 'Project kickoff', suggestedDate: '2025-11-27T00:00:00', travelStartDate: '2025-12-10T00:00:00', travelEndDate: '2025-12-20T00:00:00', status: 1, rptEmpId: '128' },
+    { tId: 103, empId: '828', country: 'USA', city: 'New York', remark: 'Annual conference', suggestedDate: '2025-11-25T00:00:00', travelStartDate: '2025-12-15T00:00:00', travelEndDate: '2025-12-20T00:00:00', status: 0, rptEmpId: '2' },
   ],
 
   documents: [
@@ -145,20 +145,30 @@ const mockApi = {
     await delay(500);
     console.log('🔵 MOCK: POST /api/manager/InsertTravelDetail');
 
-    mockDB.travels.push(travelData);
+    const newTravel = {
+      ...travelData,
+      tId: Math.floor(Math.random() * 10000) // Generate mock TID
+    };
+
+    mockDB.travels.push(newTravel);
 
     return { status: 'Success', result: 'Inserted' };
   },
 
   // POST /api/UpdateTravelStatus
-  updateTravelStatus: async (empId, status) => {
+  updateTravelStatus: async (travelId, status) => {
     await delay(400);
-    console.log('🔵 MOCK: POST /api/UpdateTravelStatus');
+    console.log('🔵 MOCK: POST /api/UpdateTravelStatus TID:', travelId);
 
-    const travel = mockDB.travels.find(t => t.empId === empId);
-    if (travel) travel.status = status;
+    // Mock uses tId
+    const travel = mockDB.travels.find(t => t.tId === Number(travelId) || t.empId === travelId); // Fallback for testing
 
-    return { status: 'Success', result: 'Updated' };
+    if (travel) {
+      travel.status = status;
+      return { status: 'Success', result: 'Updated' };
+    }
+
+    return { status: 'Failure', result: 'Travel ID not found' };
   },
 
   // GET /api/GetAllDocumentsList
