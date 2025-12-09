@@ -163,20 +163,20 @@ const managerService = {
   /**
    * Update travel status
    * API: POST /api/UpdateTravelStatus
-   * @param {string} empId - Employee ID
+   * @param {string} travelId - Travel ID (TID)
    * @param {number} status - New status
    */
-  updateTravelStatus: async (empId, status) => {
+  updateTravelStatus: async (travelId, status) => {
     if (apiConfig.USE_MOCK_API) {
-      console.log('🔵 Using MOCK API for updateTravelStatus');
+      console.log('🔵 Using MOCK API for updateTravelStatus', { travelId, status });
       return { success: true, message: 'Status updated' };
     }
 
-    console.log('🟢 Updating travel status:', { empId, status });
+    console.log('🟢 Updating travel status:', { travelId, status });
 
     const formData = new FormData();
-    formData.append('empId', empId);
-    formData.append('status', status);
+    formData.append('TID', travelId);
+    formData.append('Status', status);
 
     const response = await apiClient.post('/api/UpdateTravelStatus', formData);
     console.log('Update status response:', response.data);
@@ -191,15 +191,15 @@ const managerService = {
   /**
    * Approve travel request
    */
-  approveTravelRequest: async (empId) => {
-    return managerService.updateTravelStatus(empId, 2); // Status 2 = Manager Approved
+  approveTravelRequest: async (travelId) => {
+    return managerService.updateTravelStatus(travelId, 2); // Status 2 = Manager Approved
   },
 
   /**
    * Reject travel request
    */
-  rejectTravelRequest: async (empId) => {
-    return managerService.updateTravelStatus(empId, 4); // Status 4 = Rejected
+  rejectTravelRequest: async (travelId) => {
+    return managerService.updateTravelStatus(travelId, 4); // Status 4 = Rejected
   }
 };
 
