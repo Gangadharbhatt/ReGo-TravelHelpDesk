@@ -122,7 +122,7 @@ const TravelDeskPortal = () => {
         {/* Pending Bookings Tab */}
         {tabValue === 0 && (
           <SharedCard variant="dashboard">
-            <SharedTable>
+            <SharedTable stickyHeader maxHeight="500px">
               <TableHeader columns={[
                 { id: 'id', label: 'Request ID' },
                 { id: 'employee', label: 'Employee' },
@@ -166,7 +166,7 @@ const TravelDeskPortal = () => {
         {/* Completed Bookings Tab */}
         {tabValue === 1 && (
           <SharedCard variant="dashboard">
-            <SharedTable>
+            <SharedTable stickyHeader maxHeight="500px">
               <TableHeader columns={[
                 { id: 'id', label: 'Request ID' },
                 { id: 'employee', label: 'Employee' },
