@@ -95,7 +95,8 @@ const managerService = {
       : [response.data.result];
 
     return travels.map(travel => ({
-      id: `${travel.empId}-${travel.country}-${travel.travelStartDate}`,
+      id: travel.tId || travel.TID || `${travel.empId}-${travel.country}-${travel.travelStartDate}`,
+      travelId: travel.tId || travel.TID, // Explicit travel ID for API calls
       empId: travel.empId,
       country: travel.country,
       city: travel.city,
