@@ -8,7 +8,7 @@ const realApi = {
   // ==========================================
   // AUTHENTICATION
   // ==========================================
-  
+
   // POST /api/LoginRequest
   login: async (username, password) => {
     console.log('🟢 REAL: POST /api/LoginRequest');
@@ -53,7 +53,7 @@ const realApi = {
     console.log('🟢 REAL: POST /api/manager/GetEmployeesByRptId');
 
     const formData = new FormData();
-    formData.append('ID', managerId);
+    formData.append('RptId', managerId);
 
     const response = await apiClient.post('/api/manager/GetEmployeesByRptId', formData);
     return response.data;
@@ -64,7 +64,7 @@ const realApi = {
     console.log('🟢 REAL: POST /api/manager/TravelDetailByRptId');
 
     const formData = new FormData();
-    formData.append('id', managerId);
+    formData.append('RptId', managerId);
 
     const response = await apiClient.post('/api/manager/TravelDetailByRptId', formData);
     return response.data;
@@ -85,12 +85,12 @@ const realApi = {
   // ==========================================
 
   // POST /api/UpdateTravelStatus
-  updateTravelStatus: async (empId, status) => {
+  updateTravelStatus: async (travelId, status) => {
     console.log('🟢 REAL: POST /api/UpdateTravelStatus');
 
     const formData = new FormData();
-    formData.append('empId', empId);
-    formData.append('status', status);
+    formData.append('TID', travelId);
+    formData.append('Status', status);
 
     const response = await apiClient.post('/api/UpdateTravelStatus', formData);
     return response.data;
@@ -157,7 +157,7 @@ const realApi = {
    */
   updateDocument: async (empId, documentId, document, fileType, fileName, fileSize) => {
     console.log('🟢 REAL: POST /api/employee/AddDocumentWithMetadata (Update)');
-    
+
     // Backend AddDocument method handles both insert and update
     return realApi.addDocumentWithMetadata(empId, documentId, document, fileType, fileName, fileSize);
   },
