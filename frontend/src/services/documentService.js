@@ -141,11 +141,11 @@ const documentService = {
       const documentsMap = {};
       if (response.result && Array.isArray(response.result)) {
         response.result.forEach(doc => {
-          documentsMap[doc.documentID] = {
+          documentsMap[doc.documentId] = {  // Use documentId (lowercase) to match mockApi
             empDocId: doc.empDocId,
-            fileName: doc.fileName || `Document_${doc.documentID}`,
+            fileName: doc.documentName || `Document_${doc.documentId}`,  // mockApi uses documentName
             fileType: doc.fileType || 'application/octet-stream',
-            fileSize: doc.fileSize || 0,
+            fileSize: doc.documentSize || 0,  // mockApi uses documentSize
             uploadedAt: doc.createdOn,
             updatedAt: doc.updatedOn
           };
