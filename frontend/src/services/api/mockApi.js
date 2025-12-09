@@ -203,7 +203,7 @@ const mockApi = {
       createdOn: newDoc.createdOn
     });
 
-    console.log('📁 Total documents for employee ' + empId + ':', 
+    console.log('📁 Total documents for employee ' + empId + ':',
       mockDB.employeeDocuments.filter(d => d.empId === empId).length
     );
 
@@ -279,6 +279,34 @@ const mockApi = {
     console.log('📁 Found', docs.length, 'documents for employee', empId);
 
     return { status: 'Success', result: docs };
+  },
+
+  // ✅ GET document file with base64 content (for preview)
+  getDocumentFile: async (empId, documentId) => {
+    await delay(300);
+    console.log('🔵 MOCK: GET document file for:', { empId, documentId });
+
+    const doc = mockDB.employeeDocuments.find(
+      d => d.empId === empId && d.documentId === documentId
+    );
+
+    if (!doc) {
+      console.log('📄 Document not found');
+      return { status: 'Functional Failure', result: null };
+    }
+
+    console.log('📄 Document found:', doc.documentName);
+    return {
+      status: 'Success',
+      result: {
+        empDocId: doc.empDocId,
+        fileName: doc.documentName,
+        fileType: 'application/pdf',
+        fileSize: doc.documentSize,
+        base64String: doc.documentPreview, // Mock base64
+        createdOn: doc.createdOn
+      }
+    };
   },
 
   // GET /api/GetRollMaster
